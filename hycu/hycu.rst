@@ -96,7 +96,7 @@ HYCU has also introduced support for non-Nutanix ESXi environments, allowing cus
 
    - **URL** - *Your Prism Element URL* (e.g. https://10.XX.YY.37:9440)
    - **User** - admin
-   - **Password** - techX2019!
+   - **Password** - nutanix/4u
 
 #. Click **Save**.
 

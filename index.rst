@@ -26,7 +26,7 @@
 Getting Started
 ---------------
 
-Welcome to the Nutanix Technology Bootcamp! This workbook accompanies an instructor-led session that introduces Nutanix Core technologies and many common management tasks.
+Welcome to the Hycu and Nutanix add-on lab! This workbook accompanies an instructor-led session that introduces Nutanix and Hycu software workong together.
 
 You will explore using Hycu with Nutanix.
 
