@@ -11,7 +11,22 @@ Overview
 
 HYCU is the only solution built from the ground up to deliver a full suite of backup capabilities for Nutanix AHV and ESXi clusters, eliminating a key barrier to entry for AHV prospects. HYCU can be used to backup Nutanix Volumes VGs and Nutanix Files deployments.
 
-Additionally, as pure software, HYCU can help grow Nutanix deals as additional nodes are positioned to act as a backup target for workloads.
+As pure software, HYCU can help grow Nutanix deals as additional nodes are positioned to act as a backup target for workloads.
+
+Additionally, HYCU has introduced support for non-Nutanix ESXi environments, allowing customers migrating to Nutanix from legacy platforms a single backup solution.  HYCU is able to backup the following Applications and File Services on Nutanix:
+
+- Microsoft SQL Server
+- Microsoft Exchange Server
+- Microsoft Active Directory
+- Oracle Database
+- Nutanix Files
+- Microsoft SQL Failover Cluster
+- SAP HANA
+- Nutanix Volume Groups
+
+HYCU can be bundled with Nutanix's Secondary Storage Offering, Nutanix Mine
+
+.. figure:: images/mine_hycu_logo.png
 
 **In this lab you will deploy and configure a HYCU appliance and explore different workflows for backup and recovery of data within a Nutanix environment.**
 
@@ -40,12 +55,8 @@ Configuring HYCU Appliance
    - Remove **CD-ROM** Disk
    - Select **Add New NIC**
 
-     - **VLAN Name** - Secondary
+     - **VLAN Name** - Primary
      - Select **Add**
-
-   .. note::
-
-     It is important that the **Secondary** network be selected. In order to complete the :ref:`hycu-files` exercise, HYCU requires access to the Files client network.
 
 #. Select the *Initials*\ **-HYCU** VM and click **Power on**.
 
@@ -53,9 +64,11 @@ Configuring HYCU Appliance
 
    The secondary disk added to the appliance is used as a data disk for the local HYCU database as well as maintenance operations. It is not used for storing VM backup data.
 
-#. Once the VM has started, note the IP Address assigned by IPAM DHCP in Prism.
-
 #. Click **Launch Console**.
+
+#. Select **1 HYCU Backup Controller**
+
+.. figure:: images/0.png
 
 #. Fill out the following fields, highlight **OK** and press **Return**:
 
@@ -81,7 +94,7 @@ Adding A Backup Source
 
 HYCU provides tight integration with Nutanix clusters running either AHV or ESXi. Rather than relying on traditional hypervisor "stun" snapshots, HYCU speaks directly to the Nutanix Distributed Storage Fabric to determine changed blocks via API and leverage efficient `redirect-on-write snapshots <https://nutanixbible.com/#anchor-book-of-acropolis-snapshots-and-clones>`_.
 
-HYCU has also introduced support for non-Nutanix ESXi environments, allowing customers migrating to Nutanix from legacy platforms a single backup solution.
+If the cluster on which the HYCU virtual appliance is being deployed is a Nutanix Mine appliance, then the Nutanix Mine cluster needs to be added as both a source and target within HYCU. Whether deployed on a Mine appliance or a standard Nutanix cluster, the HYCU Dashboard can be deployed to the Prism Element of the cluster with one-click after adding the Nutanix Cluster as a Source.
 
 #. Open \https://<*HYCU-VM-IP*>:8443/ in a browser. Log in to the **HYCU** HTML5 web interface using the default credentials:
 
@@ -98,92 +111,71 @@ HYCU has also introduced support for non-Nutanix ESXi environments, allowing cus
    - **User** - admin
    - **Password** - nutanix/4u
 
-#. Click **Save**.
+#. Click **Next**.
+
+#. HYCU will validate the Nutanix cluster. Click **Save**
+
+   .. figure:: images/4.png
 
 #. After the job has been initiated, click **Close**.
 
    All jobs are launched asynchronously and can be tracked on the **Jobs** page.
 
-   .. figure:: images/4.png
+   .. figure:: images/5.png
+
+#. Once the cluster has been added as a source, highlight it and click "Register with Prism" to deploy the HYCU dashboard to Prism.
+
+   .. figure:: images/6.png
+
+   .. note:: Deploying the HYCU dashboard to Prism Element will automatically restart the Prism Service on the cluster.
+
+   .. figure:: images/7.png
 
 #. From the **HYCU** sidebar, click :fa:`bars` **> Virtual Machines** and validate that your cluster's VMs are listed in the table.
 
 Adding A Backup Target
 ++++++++++++++++++++++
 
-The target is used for storing backups coordinated by HYCU. HYCU supports AWS, S3 (including Nutanix Buckets), Azure, NFS (including Nutanix Files), SMB (including Nutanix Files), and iSCSI storage targets (including Nutanix Volumes).
+The target is used for storing backups coordinated by HYCU. HYCU supports:
+   - iSCSI (including Nutanix Volumes)
+   - NFS (including Nutanix Files)
+   - SMB (including Nutanix Files)
+   - AWS, S3 (including Nutanix Buckets)
+   - Azure
 
-In this exercise you will create a Nutanix Volume group to use as a target for VM backup data. In a production environment the HYCU appliance and target storage would not reside on the same cluster as the source VMs.
+In this exercise you will create a Nutanix Volume group to use as a target for VM backup data.
+   - In a Nutanix Mine environment, the HYCU appliance and target storage would reside on the same cluster.
+   - In a non-Mine production environment the HYCU appliance and target storage would not reside on the same cluster as the source VMs.
 
-#. From the HYCU toolbar, click :fa:`cog` **> iSCSI Initiator**.
+HYCU makes it incredibly easy to configure a Nutanix cluster (whether Mine or otherwise) as a target. After specifying Prism Element credentials, HYCU automatically configures a Volume Group with multiple vDisks and enables external iSCSI access.  HYCU then leverages this Volume Group as a backup target.
 
-#. Highlight the **Initiator Name** and copy to your clipboard or an external text file. Click **Close**.
-
-   .. figure:: images/6.png
-
-#. From **Prism > Storage > Table > Storage Container**, select **+ Storage Container**.
-
-#. Fill out the following fields and click **Save**:
-
-   - **Name** - *Initials*\ -Backup
-   - Select **Advanced Settings**
-   - Select **Compression**
-   - **Delay (In Minutes)** - 60
-   - Select **Erasure Coding**
-
-   .. figure:: images/5.png
-
-   Erasure Coding is well suited to backup target use cases as retained snapshots will become write cold and not frequently overwritten.
-
-#. From **Prism > Storage > Table > Volume Groups**, select **+ Volume Group**.
-
-#. Fill out the following fields and click **Save**:
-
-   - **Name** - *Initials*\ -HYCU-Target
-   - **iSCSI Target Name Prefix** - *Initials*\ -HYCU-Target
-   - **Description** - HYCU Target VG
-   - Select **+ Add New Disk**
-
-     - **Storage Container** - *Initials*\ -Backup
-     - **Size (GiB)** - 1000
-   - Select **Enable external client access**
-   - Select **CHAP Authentication**
-   - **Target Password** - nutanixnutanix
-   - Select **+ Add New Client**
-
-     - **Client IQN** - *HYCU iSCSI Initiator IQN*
-     - Select **Add**
-
-   .. figure:: images/7.png
-
-   HYCU's current recommendation is to use 1 disk per Volume Group.
-
-#. Select *Initials*\ **-HYCU-Target** VG and note the **Target IQN Prefix** in the **Volume Group Details** table. Triple-click this value to fully select it. Copy the value to your clipboard.
-
+.. note:: Prior to configuring a Nutanix target in HYCU, ensure the cluster has a Data Services IP configured
+   
    .. figure:: images/8.png
-
-#. From **Prism >** :fa:`cog` **> Cluster Details**, note the **iSCSI Data Services IP**. Click **Cancel**.
-
-   .. figure:: images/9.png
 
 #. From the **HYCU** sidebar, click :fa:`bars` **> Targets**.
 
 #. Click **+ New**, fill out the following fields, and click **Save**:
 
-   - **Name** - NutanixVG
+   - **Name** - Nutanix-Target
    - **Concurrent Backups** - 4
    - **Description** - *Nutanix Cluster Name* HYCU-Target VG
-   - **Type** - iSCSI
-   - **Target Portal** - *Nutanix cluster iSCSI Data Services IP*
-   - **Target Name** - *Initials*\ -HYCU-Target IQN
-   - Select **CHAP**
-   - **Target Secret** - nutanixnutanix
+   - **Type** - Nutanix
+   - **URL** - *Your Prism Element URL* (e.g. https://10.XX.YY.37:9440)
+   - **Username** - admin
+   - **Password** - nutanix/4u
 
-   .. figure:: images/10.png
+   .. figure:: images/9.png
 
-   Maximum concurrent backups is the number of backup or restore jobs that will run in parallel, and is a factor of how much disk throughput the backup target is capable of providing. A default of 4 can be safely configured for a single vDisk VG target.
+Multiple backup targets can be added to support backup jobs.
 
-   Multiple backup targets can be added to support backup jobs.
+.. note:: Nutanix storage container settings can be configured at this step. Follow Nutanix recommended best practice for backup workloads - as a general rule, hardware compression can be enabled, but deduplication should be left disabled. If the cluster has 4 or more nodes, consider enabling Erasure Coding.
+
+#. The Target Deployment takes about 3 minutes to complete. You can monitor the progress in the "Jobs" menu within HYCU
+
+#. HYCU automatically deploys a Volume Group. Once the target configuration completes, you can see the HYCU container and Volume Group deployed from within the cluster's Prism Element interface:
+
+.. figure:: images/10.png
 
 Configuring Backup Policies
 +++++++++++++++++++++++++++
