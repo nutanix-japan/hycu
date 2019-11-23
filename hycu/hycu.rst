@@ -9,14 +9,14 @@ HYCU
 Overview
 ++++++++
 
-HYCU is the only solution built from the ground up to deliver a full suite of backup capabilities for Nutanix AHV and ESXi clusters, eliminating a key barrier to entry for AHV prospects. HYCU can be used to backup Nutanix Volumes VGs and Nutanix Files deployments.
+HYCU is the only solution built from the ground up to deliver a full suite of backup capabilities for Nutanix AHV and ESXi clusters, eliminating a key barrier to entry for AHV prospects. HYCU can be used to backup Nutanix VMs, Volumes, and Nutanix Files deployments.
 
 As pure software, HYCU can help grow Nutanix deals as additional nodes are positioned to act as a backup target for workloads.
 
-Additionally, HYCU has introduced support for non-Nutanix ESXi environments, allowing customers migrating to Nutanix from legacy platforms a single backup solution.  HYCU is able to backup the following Applications and File Services on Nutanix:
+HYCU also fully supports non-Nutanix ESXi and Physical Windows Server environments, allowing customers migrating to Nutanix from legacy platforms a single backup solution. HYCU is able to backup the following Applications and File Services on Nutanix:
 
-- Microsoft SQL Server
-- Microsoft Exchange Server
+- Microsoft SQL Server (including failover and Availability Groups)
+- Microsoft Exchange Server (including Database Availability Group (DAG))
 - Microsoft Active Directory
 - Oracle Database
 - Nutanix Files
@@ -94,7 +94,7 @@ Adding A Backup Source
 
 HYCU provides tight integration with Nutanix clusters running either AHV or ESXi. Rather than relying on traditional hypervisor "stun" snapshots, HYCU speaks directly to the Nutanix Distributed Storage Fabric to determine changed blocks via API and leverage efficient `redirect-on-write snapshots <https://nutanixbible.com/#anchor-book-of-acropolis-snapshots-and-clones>`_.
 
-If the cluster on which the HYCU virtual appliance is being deployed is a Nutanix Mine appliance, then the Nutanix Mine cluster needs to be added as both a source and target within HYCU. Whether deployed on a Mine appliance or a standard Nutanix cluster, the HYCU Dashboard can be deployed to the Prism Element of the cluster with one-click after adding the Nutanix Cluster as a Source.
+If the cluster on which the HYCU virtual appliance is being deployed is a Nutanix Mine appliance, then the Nutanix Mine cluster needs to be added as both a source and target within HYCU. When deploying HYCU to a Mine appliance, the HYCU Dashboard can be deployed to the Prism Element of the cluster with one-click after adding the Nutanix Cluster as a Source.
 
 #. Open \https://<*HYCU-VM-IP*>:8443/ in a browser. Log in to the **HYCU** HTML5 web interface using the default credentials:
 
@@ -123,6 +123,8 @@ If the cluster on which the HYCU virtual appliance is being deployed is a Nutani
 
    .. figure:: images/5.png
 
+   .. note:: By Default, the Prism Element dashboard can only be deployed to Nutanix Mine Clusters. For standard Nutanix clusters (non-Mine clusters), the HYCU Prism dashboard may be able to be deployed to the cluster's Prism Element. Contact a HYCU sales representative to determine eligibility.
+
 #. Once the cluster has been added as a source, highlight it and click "Register with Prism" to deploy the HYCU dashboard to Prism.
 
    .. figure:: images/6.png
@@ -137,20 +139,22 @@ Adding A Backup Target
 ++++++++++++++++++++++
 
 The target is used for storing backups coordinated by HYCU. HYCU supports:
+   - Nutanix
    - iSCSI (including Nutanix Volumes)
    - NFS (including Nutanix Files)
    - SMB (including Nutanix Files)
    - AWS, S3 (including Nutanix Buckets)
    - Azure
+   - Google Cloud Platform (GCP)
 
 In this exercise you will create a Nutanix Volume group to use as a target for VM backup data.
    - In a Nutanix Mine environment, the HYCU appliance and target storage would reside on the same cluster.
    - In a non-Mine production environment the HYCU appliance and target storage would not reside on the same cluster as the source VMs.
 
-HYCU makes it incredibly easy to configure a Nutanix cluster (whether Mine or otherwise) as a target. After specifying Prism Element credentials, HYCU automatically configures a Volume Group with multiple vDisks and enables external iSCSI access.  HYCU then leverages this Volume Group as a backup target.
+HYCU makes it incredibly easy to configure a Nutanix cluster (whether Mine or otherwise) as a target. After specifying Prism Element credentials, HYCU automatically configures a Volume Group with multiple vDisks and enables external iSCSI access.  The Volume Group is then formatted with XFS and allows data to be striped across the multiple underlying vDisks, thereby maximizing write performance, which in-turn helps minimize backup job times.  HYCU then leverages this Volume Group as a backup target.
 
 .. note:: Prior to configuring a Nutanix target in HYCU, ensure the cluster has a Data Services IP configured
-   
+
    .. figure:: images/8.png
 
 #. From the **HYCU** sidebar, click :fa:`bars` **> Targets**.
@@ -348,6 +352,22 @@ In this exercise you will back up a Windows Server VM with a mounted iSCSI Volum
 
    .. figure:: images/18.png
 
+Backup from replica
+..................
+
+In multi-cluster Nutanix environments, customers will more than often configure Nutanix Protection Domain replication for disaster recovery purpose. HYCU is able to understand Nutanix Protection Domains (PDs) in such a manner that it can backup production VMs from their replica instead of performing a backup directly from the cluster where the VMs are running. This way HYCU will:
+ - Not copy the data twice, thus cutting the bandwidth requirements in half
+ - Not require any agents or proxies deployed and maintained in the production cluster
+ - Still be able to perform recovery into original or any other cluster of customer choice.
+
+This is useful for various scenarios:
+ -  ROBO (Remote Office Branch Office) protection
+ -  Multiple production sites that are replicating to a central data center
+ -  Two production sites in active/active setup where HYCU can backup from replica to avoid secondary copy
+ -  Production and DR site, where HYCU can run inside the DR site protecting production VMs without touching the PROD site
+
+ .. figure:: images/13b.png
+
 Restoring Backups
 +++++++++++++++++
 
@@ -436,7 +456,7 @@ In addition to restoring full VMs or disks, HYCU can also be used to directly re
 (Optional) Nutanix Files Integration
 ++++++++++++++++++++++++++++++++++++
 
-HYCU is the first solution to provide fully integrated backup and restore capabilities for Nutanix Files using native Nutanix Change File Tracking (CFT) APIs.
+HYCU is the first solution to provide fully integrated backup and restore capabilities for Nutanix Files using native Nutanix Change File Tracking (CFT) APIs.  Additionally, HYCU is capable of backing up both SMB and NFS shares in Nutanix Files.
 
 While classic backup solutions heavily burden the file server by using the Network Data Management Protocol (NDMP) approach, needing to traverse the whole file tree to identify changed files, HYCU uses Nutanix storage layer snapshots and CFT to get the changed files instantly. This means HYCU backups remove impact on the file server and significantly reduce the data-loss risk by backing up file share changes on hourly basis, compared to classic, nightly file share backups.
 
@@ -444,6 +464,8 @@ This exercise requires completion of the :ref:`files` lab to properly stage the 
 
 Adding SMB Share Target
 .......................
+
+.. note:: In this exercise, we will be using a Nutanix Files SMB share, however note that HYCU also supports NFS shares.
 
 For the purposes of this exercise, you will back up one Files share source to a Files share target. First you will define a share on your Files cluster that can be used as a target for backup data.
 
