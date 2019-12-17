@@ -1,12 +1,23 @@
 .. title:: Hycu and Nutanix
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Hycu
+   :maxdepth: 3
+   :caption: HYCU
    :name: _hycu
    :hidden:
 
    hycu/hycu
+
+.. toctree::
+   :maxdepth: 3
+   :caption: HYCU Add-On Labs
+   :name: _addon
+   :hidden:
+
+   protecting-applications/protectingapps
+   protecting-physical/protectingphysical
+   reporting/reporting
+   self-service/selfservice
 
 .. toctree::
    :maxdepth: 2
