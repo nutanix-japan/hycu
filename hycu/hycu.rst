@@ -467,7 +467,7 @@ In addition to restoring full VMs or disks, HYCU can also be used to directly re
 Configuring Nutanix Objects as a Target
 +++++++++++++++++++++++++++++++++++++++
 
-HYCU supports the ability to backup workloads to S3-compatible object store. This is a prime use case for Nutanix Objects and one way in which we accommodate large backup workloads with Nutanix Mine - we size an initial Mine Secondary Storage cluster, and a separate Nutanix Objects cluster which can be configured as a target within HYCU.  Configuring Objects within HYCU is simple and straightforward and there's little to no performance penalty for using on-prem objects relative to using a traditional iSCSI backup target
+Ransomware in a box! HYCU supports the ability to backup workloads to S3-compatible object store. This is a prime use case for Nutanix Objects and one way in which we accommodate large backup workloads with Nutanix Mine - we size an initial Mine Secondary Storage cluster, and a separate Nutanix Objects cluster which can be configured as a target within HYCU.  Configuring Objects within HYCU is simple and straightforward and there's little to no performance penalty for using on-prem objects relative to using a traditional iSCSI backup target
 
 .. note:: To save time, we have already enabled Objects within Prism Central and pre-staged an object store named "ntnx-objects." We will create our Bucket within that object store
 
