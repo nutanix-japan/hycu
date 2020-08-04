@@ -190,7 +190,7 @@ Multiple backup targets can be added to support backup jobs.
 Configuring Nutanix Objects as a Target
 +++++++++++++++++++++++++++++++++++++++
 
-HYCU supports the ability to backup workloads to S3-compatible object store making it a perfect use case for Nutanix Objects. HYCU is able to utilize Nutanix Objects natively, supporting not only archving but also primary backup/copy operations to Objects cluster without use of proxies. In addition, HYCU seamlessly integrates With Nutanix Objects WORM (objects lock) functionality, bringing proper ransomware protection to our clients.
+HYCU supports the ability to backup workloads to S3-compatible object store making it a perfect use case for Nutanix Objects. HYCU is able to utilize Nutanix Objects natively, supporting not only archiving but also primary backup/copy operations to Objects cluster without use of proxies. In addition, HYCU seamlessly integrates With Nutanix Objects WORM (objects lock) functionality, bringing proper ransomware protection to our clients.
 
 Nutanix Objects can be positioned in three ways
    - HYCU with Mine cluster used as a primary storage, providing secondary copy and archiving capabilities on Nutanix Objects cluster
@@ -311,11 +311,11 @@ HYCU uses policies to define RPO, RTO, retention, and backup target(s), allowing
    - **Copy** - Asyncronously copies data from the primary backup target to a configurable secondary backup target during periods of non-peak utilization.
    - **Archiving** - Allows an administrator to target slower, cold storage for long term retention of **full** backups.
    - **Fast Restore** - Retains and restores from local snapshots on the Nutanix cluster for rapid restore operations.
-   - **Backup from Replica** - For VMs that use native Nutanix replication from a primary cluster to a secondary cluster, this feature will backup VMs from the replicated snapshots on the secondary cluster. This functionality can significantly reduce data movement for scenarios such as Remote Office Branch Office. It also removes the need for deployment of agents/proxies within the remote site.
+   - **Auto-assignment** - Based on Prism Central VM Categories or vCenter VM tags HYCU will automatically assign the appropriate policy to the newly discovered virtual machine.
 
    HYCU is also unique in its ability for administrators to define desired RTO. By specifying a desired **Recover Within** period and selecting **Automatic** target selection, HYCU will compute the right target to send the VM. The performance of the target is constantly monitored to ensure it can recover the data within the configured window. If a HYCU instance has several targets configured, a subset can be selected and HYCU will still intelligently choose between the selected targets.
 
-#. To configure archiving to Nutanix Objects click on "Archiving" from the top right menu which will open the Archiving Prompt. Then click +New
+#. To configure archiving to Nutanix Objects click on "Archiving" from the top right menu which will open the Archiving Prompt. Then click **+ New**
 
 #. Name the Archival entry "Nutanix_Objects"
 
