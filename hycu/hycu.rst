@@ -11,7 +11,7 @@ Overview
 
 HYCU is the only solution built from the ground up to deliver a full suite of backup capabilities for Nutanix AHV and ESXi clusters. HYCU can be used to backup Nutanix VMs, Volumes, and Nutanix Files deployments.
 
-As pure software, HYCU can help grow Nutanix deals as additional nodes are positioned to act as a backup target for workloads.
+Being software-only appliance, HYCU can help grow Nutanix deals as additional nodes are positioned to act as a backup target for workloads.
 
 HYCU also fully supports non-Nutanix ESXi and Physical Windows Server environments, allowing customers migrating to Nutanix from legacy platforms a single backup solution. HYCU is able to backup any application in a consistent manner using pre/post exec framework, and has special integration with the following Applications and File Services on Nutanix:
 
@@ -95,7 +95,9 @@ Adding A Backup Source
 
 HYCU provides tight integration with Nutanix clusters running either AHV or ESXi. Rather than relying on traditional hypervisor "stun" snapshots, HYCU speaks directly to the Nutanix Distributed Storage Fabric to determine changed blocks via API and leverage efficient `redirect-on-write snapshots <https://nutanixbible.com/#anchor-book-of-acropolis-snapshots-and-clones>`_.
 
-If the cluster on which the HYCU virtual appliance is being deployed is a Nutanix Mine appliance, then the Nutanix Mine cluster needs to be added as both a source and target within HYCU. When deploying HYCU to a Mine appliance, the HYCU Dashboard can be deployed to the Prism Element of the cluster with one-click after adding the Nutanix Cluster as a Source.
+If the cluster on which the HYCU virtual appliance is being deployed is a Nutanix Mine appliance, then the Nutanix Mine cluster needs to be added as both a source and target within HYCU.
+
+When deploying HYCU to a Mine appliance, the HYCU Dashboard can be deployed to the Prism Element of the cluster with one-click after adding the Nutanix Cluster as a Source:
 
 #. Open \https://<*HYCU-VM-IP*>:8443/ in a browser. Log in to the **HYCU** HTML5 web interface using the default credentials:
 
@@ -166,6 +168,8 @@ HYCU makes it incredibly easy to configure a Nutanix cluster (whether Mine or ot
 
 #. Click **+ New**, fill out the following fields, and click **Save**:
 
+.. note:: Nutanix storage container settings can be configured at this step. Follow Nutanix recommended best practice for backup workloads - as a general rule, hardware compression can be enabled, but deduplication should be left disabled. If the cluster has 4 or more nodes, consider enabling Erasure Coding.
+
    - **Name** - Nutanix_VG
    - **Concurrent Backups** - 4
    - **Description** - *Nutanix Cluster Name* HYCU-Target VG
@@ -177,8 +181,6 @@ HYCU makes it incredibly easy to configure a Nutanix cluster (whether Mine or ot
    .. figure:: images/9.png
 
 Multiple backup targets can be added to support backup jobs.
-
-.. note:: Nutanix storage container settings can be configured at this step. Follow Nutanix recommended best practice for backup workloads - as a general rule, hardware compression can be enabled, but deduplication should be left disabled. If the cluster has 4 or more nodes, consider enabling Erasure Coding.
 
 #. The Target Deployment takes about 3 minutes to complete. You can monitor the progress in the "Jobs" menu within HYCU
 
@@ -199,9 +201,9 @@ Nutanix Objects can be positioned in three ways
 
 Nutanix Objects and HYCU security story is that much more powerful knowing that
    - HYCU is a locked down Linux based appliance, running on CentOS version 8, updated with the latest security patches with each release
-   - HYCU is able to keep additional Nutanix snapshots as another layer of protection with Fast Restore option
+   - HYCU is able to keep additional Nutanix snapshots as another layer of protection using Fast Restore option
    - HYCU's Software WORM capabilities disallow accidental or malicious deletion of Backups
-   - End to end encryption support...
+   - End to end encryption support.
 
 Configuring Objects within HYCU is simple and straightforward and performance of writing to Objects is on par with using a traditional iSCSI backup target.
 
@@ -233,13 +235,15 @@ Configuring a Bucket
 
    .. figure:: images/34.png
 
-#. Once created, click on the bucket and select "User Access," then click the "Edit User Access"
+#. Once created, click on the "*initials*-hycu-bucket" and select "User Access," then click the "Edit User Access"
 
 #. Type "*initials*-hycu@ntnxlab.local" and select both the "Read" and "Write" options, then click Save
 
    .. figure:: images/35.png
 
 #. For additional ransomware protection select the just created bucket "*initials*-hycu-bucket" and navigate to Actions > Configure WORM to configure Nutanix objects WORM.
+
+   .. figure:: images/42.png
 
 #. Mark Enable WORM, set retention period to 7 days and Click "Enable WORM"
 
@@ -262,11 +266,11 @@ Configure Nutanix Objects within HYCU
 
 #. Under Type, specify "AWS S3/Compatible"
 
-#. For the service endpoint, specify http://[objects client used IP]. This IP can be found within Prism Central when you click on the object store
+#. For the service endpoint, specify `http://[objects client used IP]`. This IP can be found within Prism Central when you click on the object store
 
    .. figure:: images/37.png
 
-#. For Bucket Name, specify "*initials*hycu-bucket"
+#. For Bucket Name, specify "*initials*-hycu-bucket"
 
 #. Retrieve the Access Key ID and Secret Access Key from the file you downloaded earlier when configuring the user within Nutanix Objects. Click "Save"
 
@@ -278,7 +282,8 @@ You can now modify existing HYCU policies or create new policies which "tier-off
 Configuring Backup Policies
 +++++++++++++++++++++++++++
 
-HYCU uses policies to define RPO, RTO, retention, and backup target(s), allowing for the easy application of these SLAs to groups of VMs.
+HYCU policies are designed to map business Service Level Objective (SLO) requirements to the data protection requirements by specifying the maximum tolerable period in which data could be lost - Recovery Point Objective (RPO) and the maximum tolerable period required to bring the data back – Recovery Time Objective (RTO).
+By defining policies RPO (Backup Every), RTO (Recover Within), retention, and backup target(s), you allow easy application of these SLAs to groups of VMs.
 
 #. From the **HYCU** sidebar, click :fa:`bars` **> Policies**.
 
@@ -305,7 +310,9 @@ HYCU uses policies to define RPO, RTO, retention, and backup target(s), allowing
 
    .. figure:: images/11.png
 
-   HYCU supports multiple advanced configurations for backup policies, including:
+   HYCU is unique in its ability for administrators to define desired RTO. By specifying a desired **Recover Within** period and selecting **Automatic** target selection, HYCU will compute the right target to send the VM. The performance of the target is constantly monitored to ensure it can recover the data within the configured window. If a HYCU instance has several targets configured, a subset can be selected and HYCU will still intelligently choose between the selected targets.
+
+   There are multiple advanced configurations for backup policies, including:
 
    - **Backup Windows** - Allows an administrator to define granular time of day and day of week schedules to enforce backup policy.
    - **Copy** - Asyncronously copies data from the primary backup target to a configurable secondary backup target during periods of non-peak utilization.
@@ -313,17 +320,19 @@ HYCU uses policies to define RPO, RTO, retention, and backup target(s), allowing
    - **Fast Restore** - Retains and restores from local snapshots on the Nutanix cluster for rapid restore operations.
    - **Auto-assignment** - Based on Prism Central VM Categories or vCenter VM tags HYCU will automatically assign the appropriate policy to the newly discovered virtual machine.
 
-   HYCU is also unique in its ability for administrators to define desired RTO. By specifying a desired **Recover Within** period and selecting **Automatic** target selection, HYCU will compute the right target to send the VM. The performance of the target is constantly monitored to ensure it can recover the data within the configured window. If a HYCU instance has several targets configured, a subset can be selected and HYCU will still intelligently choose between the selected targets.
-
 #. To configure archiving to Nutanix Objects click on "Archiving" from the top right menu which will open the Archiving Prompt. Then click **+ New**
 
 #. Name the Archival entry "Nutanix_Objects"
 
-#. Enable Monthly Archive and Choose the "Nutanix_Objects" target we previously configured
+#. Enable Monthly Archive and Choose the "Nutanix_Objects" target you previously configured
 
   .. figure:: images/39.png
 
-#. Click Save and then edit the Platinum policy to enable archiving
+#. Click Save and then edit the Platinum policy
+
+  .. figure:: images/43.png
+
+#. Enable archiving by selecting
 
    - **Enabled Options** - Archiving
    - **Data Archive** - Nutanix_Objects
@@ -369,7 +378,7 @@ Create a Windows VM and add a Nutanix Volume Group to a VM through Nutanix Prism
 
 #. Complete the Sysprep process and provide a password for the local Administrator account (e.g. **nutanix/4u**).
 
-#. From **Prism > Storage > Table > Volume Groups**, select **+ Volume Group**.
+#. From **Prism Element > Storage > Table > Volume Groups**, select **+ Volume Group**.
 
 #. Fill out the following fields:
 
@@ -380,7 +389,8 @@ Create a Windows VM and add a Nutanix Volume Group to a VM through Nutanix Prism
 
      - **Storage Container** - Default
      - **Size (GiB)** - 10
-   - Select **Enable external client access**
+   - Select **Save**
+   - Double click on the newly created Volume Group
    - Select **+ Attach to a VM**
 
      - **Available VMs** - select the VM created before *Initials*\ -HYCUBackupTest
@@ -396,6 +406,15 @@ Create a Windows VM and add a Nutanix Volume Group to a VM through Nutanix Prism
 
      Get-Disk -Number 1 | Initialize-Disk -ErrorAction SilentlyContinue
      New-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter -ErrorAction SilentlyContinue | Format-Volume -Confirm:$false
+
+#. Run the following commands to enable WinRM
+
+  .. code-block:: powershell
+
+    Enable-PSRemoting –force
+    # Set start mode to automatic
+    Set-Service WinRM -StartMode Automatic
+    Set-Item WSMan:localhost\client\trustedhosts -value *
 
 #. Finally, create multiple files on the OS (C:) disk (e.g. text files on the Desktop), as well as the iSCSI (E:) disk.
 
@@ -434,7 +453,7 @@ Create a Windows VM and add a Nutanix Volume Group to a VM through Nutanix Prism
 
 #. Select the *Initials*\ **-HYCUBackupTest** VM and click **(Shield Icon) Policies**.
 
-#. Select your customized **Fast** policy and click **Assign**.
+#. Select your customized **Platinum** policy and click **Assign**.
 
 #. From the **HYCU** sidebar, click :fa:`bars` **> Jobs** to monitor the backup progress.
 
@@ -652,7 +671,7 @@ Backing Up & Restoring Files
 
 Backup and restore for Files operates very similarly to VM/VG workflows, using the same customizable policies and owner/self-service constructs.
 
-#. Add the SMB target you created, *Initials*\-HYCUTarget** into customized **Fast** policy.
+#. Add the SMB target you created, *Initials*\-HYCUTarget** into customized **Platinum** policy.
 
 #. From the **HYCU** sidebar, click :fa:`bars` **> Shares**.
 
@@ -662,7 +681,7 @@ Backup and restore for Files operates very similarly to VM/VG workflows, using t
 
      You may need to return to Prism and create an SMB share named 'Marketing' If you have created other shares that are populated with files you could select one of those as well.
 
-#. Select your customized **Fast** policy and click **Assign**.
+#. Select your customized **Platinum** policy and click **Assign**.
 
 #. Return to **Jobs** to verify the initial backup completes successfully.
 
