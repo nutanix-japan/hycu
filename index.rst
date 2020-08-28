@@ -37,9 +37,9 @@
 Getting Started
 ---------------
 
-Welcome to the Hycu and Nutanix add-on lab! This workbook accompanies an instructor-led session that introduces Nutanix and Hycu software workong together.
+Welcome to the HYCU and Nutanix add-on lab! This workbook accompanies an instructor-led session that introduces Nutanix and Hycu software workong together.
 
-You will explore using Hycu with Nutanix.
+You will explore using HYCU with Nutanix.
 
 What's New
 ++++++++++

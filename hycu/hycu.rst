@@ -409,7 +409,7 @@ Create a Windows VM and add a Nutanix Volume Group to a VM through Nutanix Prism
 
 #. Run the following commands to enable WinRM
 
-  .. code-block:: powershell
+   .. code-block:: powershell
 
     Enable-PSRemoting –force
     # Set start mode to automatic
