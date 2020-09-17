@@ -45,7 +45,7 @@ Configuring HYCU Appliance
    - Select **+ Add New Disk**
 
      - **Operation** - Clone from Image Service
-     - **Image** - hycu-\*.qcow2
+     - **Image** - hycu-\*
      - Select **Add**
    - Select **+ Add New Disk**
 
